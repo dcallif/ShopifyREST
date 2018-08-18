@@ -13,32 +13,27 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
 public class Product {
 
     /**
-     * @return empty String if file not found or incorrect number of input properties
+     * @return empty List if property file not found or to few parameters found
      */
-    private String getShopifyPropertiesEncoded() {
-        String properties = "";
+    private List<String> getProperties() {
+        List<String> properties = new ArrayList<>();
         try {
             List<String> lines = Files.readAllLines(Paths.get("src/main/resources/ShopifyStore.properties"), StandardCharsets.UTF_8);
-            if (lines.size() == 2) {
-                properties += lines.get(0).substring(lines.get(0).indexOf("=") + 1, lines.get(0).length());
-                properties += ":";
-                properties += lines.get(1).substring(lines.get(1).indexOf("=") + 1, lines.get(1).length());
+            if (lines.size() > 2) {
+                properties.add(lines.get(0).substring(lines.get(0).indexOf("=") + 1, lines.get(0).length()) + ":" + lines.get(1).substring(lines.get(1).indexOf("=") + 1, lines.get(1).length()));
+                properties.add(lines.get(2).substring(lines.get(2).indexOf("=") + 1));
+                properties.add(lines.get(3).substring(lines.get(3).indexOf("=") + 1));
             }
         } catch (IOException e) {
             e.printStackTrace();
-            return "";
-        }
-        if (!(properties.equals(""))) {
-            byte[] someByteArray = properties.getBytes();
-            String encoded = Base64.getEncoder().withoutPadding().encodeToString(someByteArray);
-            String finalAuthorization = "Basic " + encoded;
-            return finalAuthorization;
+            return properties;
         }
         return properties;
     }
@@ -54,9 +49,6 @@ public class Product {
             obj = parser.parse(response);
             JSONObject productObj = (JSONObject) obj;
             JSONArray productsArr = (JSONArray) productObj.get("products");
-            for (Object o : productsArr) {
-                System.out.println(o.toString());
-            }
             return productsArr;
         } catch (ParseException e) {
             e.printStackTrace();
@@ -66,13 +58,16 @@ public class Product {
 
     public static void main(String[] args) {
         Product p = new Product();
-        String properties = p.getShopifyPropertiesEncoded();
-        if (properties.equals("")) System.out.println("Could not get properties");
+        List<String> properties = p.getProperties();
+        byte[] someByteArray = properties.get(0).getBytes();
+        String encoded = Base64.getEncoder().withoutPadding().encodeToString(someByteArray);
+        String finalAuthorization = "Basic " + encoded;
+        if (properties.size() < 1) System.out.println("Could not get properties");
         try {
-            URL url = new URL("https://tycooninternational.myshopify.com/admin/products.json?fields=id,handle,title,tags");
+            URL url = new URL(properties.get(1) + properties.get(2) + "?fields=id,handle,title,tags");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
-            conn.setRequestProperty("Authorization", properties);
+            conn.setRequestProperty("Authorization", finalAuthorization);
 
             BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
             String response = "", s;
@@ -81,7 +76,12 @@ public class Product {
             }
             conn.disconnect();
 
-            p.convertResponseToProductsArray(response);
+            JSONArray productsArr = p.convertResponseToProductsArray(response);
+            for (Object o : productsArr) {
+                JSONObject productObj = (JSONObject) o;
+                System.out.println(String.format("ID: %s, Title: %s, Tags: %s", productObj.get("id"), productObj.get("title"),
+                        "{" + productObj.get("tags") + "}"));
+            }
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
