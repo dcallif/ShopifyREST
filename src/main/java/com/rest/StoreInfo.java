@@ -37,7 +37,7 @@ public class StoreInfo {
         }
     }
 
-    private static void setShopifyProperties() {
+    public static void setShopifyProperties() {
         try {
             List<String> lines = Files.readAllLines(Paths.get("src/main/resources/StoreInfo.properties"), StandardCharsets.UTF_8);
             if (lines.size() == 2) {
