@@ -28,7 +28,6 @@ public class ShopifyTests {
 
         String storeUrl = null;
         String token = null;
-
         try {
             List<String> lines = Files.readAllLines(Paths.get(PROPERTY_FILE), StandardCharsets.UTF_8);
             if (lines.size() == 2) {
