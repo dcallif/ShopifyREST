@@ -52,19 +52,23 @@ public class Product {
             return productsArr;
         } catch (ParseException e) {
             e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
     public static void main(String[] args) {
         Product p = new Product();
         List<String> properties = p.getProperties();
+        if (properties.size() < 1) {
+            System.out.println("Could not get properties");
+            return;
+        }
         byte[] someByteArray = properties.get(0).getBytes();
         String encoded = Base64.getEncoder().withoutPadding().encodeToString(someByteArray);
         String finalAuthorization = "Basic " + encoded;
-        if (properties.size() < 1) System.out.println("Could not get properties");
         try {
-            URL url = new URL(properties.get(1) + properties.get(2) + "?fields=id,handle,title,tags");
+            // Can add to url to reduce response size: String limitFields = "?fields=id,handle,title,tags";
+            URL url = new URL(properties.get(1) + properties.get(2) + "");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Authorization", finalAuthorization);
@@ -79,8 +83,14 @@ public class Product {
             JSONArray productsArr = p.convertResponseToProductsArray(response);
             for (Object o : productsArr) {
                 JSONObject productObj = (JSONObject) o;
-                System.out.println(String.format("ID: %s, Title: %s, Tags: %s", productObj.get("id"), productObj.get("title"),
-                        "{" + productObj.get("tags") + "}"));
+                System.out.println(String.format("ID: %s, Handle: %s, Title: %s, Tags: %s", productObj.get("id"), productObj.get("handle"),
+                        productObj.get("title"), "{" + productObj.get("tags") + "}"));
+                JSONArray variants = (JSONArray) productObj.get("variants");
+                for (Object variant : variants) {
+                    JSONObject variantObj = (JSONObject) variant;
+                    System.out.println(String.format("SKU: %s, Price: %s, Inventory: %s", variantObj.get("sku"), variantObj.get("price"),
+                            variantObj.get("inventory_quantity")));
+                }
             }
         } catch (java.io.IOException e) {
             e.printStackTrace();
