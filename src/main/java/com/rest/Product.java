@@ -1,5 +1,6 @@
 package com.rest;
 
+import com.shopifyObjects.SProduct;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -52,19 +53,23 @@ public class Product {
             return productsArr;
         } catch (ParseException e) {
             e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
     public static void main(String[] args) {
         Product p = new Product();
         List<String> properties = p.getProperties();
+        if (properties.size() < 1) {
+            System.out.println("Could not get properties");
+            return;
+        }
         byte[] someByteArray = properties.get(0).getBytes();
         String encoded = Base64.getEncoder().withoutPadding().encodeToString(someByteArray);
         String finalAuthorization = "Basic " + encoded;
-        if (properties.size() < 1) System.out.println("Could not get properties");
         try {
-            URL url = new URL(properties.get(1) + properties.get(2) + "?fields=id,handle,title,tags");
+            // Can add to url to reduce response size: String limitFields = "?fields=id,handle,title,tags";
+            URL url = new URL(properties.get(1) + properties.get(2) + "");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Authorization", finalAuthorization);
@@ -77,10 +82,18 @@ public class Product {
             conn.disconnect();
 
             JSONArray productsArr = p.convertResponseToProductsArray(response);
+            if (productsArr == null) {
+                System.out.println("No products found in store.");
+                return;
+            }
+            List<SProduct> products = new ArrayList<>();
             for (Object o : productsArr) {
                 JSONObject productObj = (JSONObject) o;
-                System.out.println(String.format("ID: %s, Title: %s, Tags: %s", productObj.get("id"), productObj.get("title"),
-                        "{" + productObj.get("tags") + "}"));
+                SProduct shopifyProduct = new SProduct(productObj);
+                System.out.println(String.format("ID: %s, Handle: %s, Title: %s, Tags: %s, SKU: %s, Price: %s, Inventory: %s, Weight: %s, graphID: %s",
+                        shopifyProduct.getId(), shopifyProduct.getHandle(), shopifyProduct.getTitle(), "{" + shopifyProduct.getTags() + "}",
+                        shopifyProduct.getSku(), shopifyProduct.getPrice(), shopifyProduct.getQuantity(), shopifyProduct.getWeight(), shopifyProduct.getGraphql_api_id()));
+                products.add(shopifyProduct);
             }
         } catch (java.io.IOException e) {
             e.printStackTrace();
