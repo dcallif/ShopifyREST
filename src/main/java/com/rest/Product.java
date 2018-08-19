@@ -81,6 +81,10 @@ public class Product {
             conn.disconnect();
 
             JSONArray productsArr = p.convertResponseToProductsArray(response);
+            if (productsArr == null) {
+                System.out.println("No products found in store.");
+                return;
+            }
             for (Object o : productsArr) {
                 JSONObject productObj = (JSONObject) o;
                 System.out.println(String.format("ID: %s, Handle: %s, Title: %s, Tags: %s", productObj.get("id"), productObj.get("handle"),
