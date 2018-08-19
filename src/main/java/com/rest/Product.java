@@ -90,9 +90,9 @@ public class Product {
             for (Object o : productsArr) {
                 JSONObject productObj = (JSONObject) o;
                 SProduct shopifyProduct = new SProduct(productObj);
-                System.out.println(String.format("ID: %s, Handle: %s, Title: %s, Tags: %s, SKU: %s, Price: %s, Inventory: %s, Weight: %s",
+                System.out.println(String.format("ID: %s, Handle: %s, Title: %s, Tags: %s, SKU: %s, Price: %s, Inventory: %s, Weight: %s, graphID: %s",
                         shopifyProduct.getId(), shopifyProduct.getHandle(), shopifyProduct.getTitle(), "{" + shopifyProduct.getTags() + "}",
-                        shopifyProduct.getSku(), shopifyProduct.getPrice(), shopifyProduct.getQuantity(), shopifyProduct.getWeight()));
+                        shopifyProduct.getSku(), shopifyProduct.getPrice(), shopifyProduct.getQuantity(), shopifyProduct.getWeight(), shopifyProduct.getGraphql_api_id()));
                 products.add(shopifyProduct);
             }
         } catch (java.io.IOException e) {

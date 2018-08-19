@@ -8,6 +8,8 @@ public class SProduct {
     private String handle;
     private String title;
     private String tags;
+    private String vendor;
+    private String graphql_api_id;
 
     private String sku;
     private String price;
@@ -31,6 +33,8 @@ public class SProduct {
         this.handle = (String) product.get("handle");
         this.title = (String) product.get("title");
         this.tags = (String) product.get("tags");
+        this.vendor = (String) product.get("vendor");
+        this.graphql_api_id = (String) product.get("admin_graphql_api_id");
 
         JSONArray variants = (JSONArray) product.get("variants");
         for (Object variant : variants) {
@@ -104,5 +108,21 @@ public class SProduct {
 
     public void setWeight(double weight) {
         this.weight = weight;
+    }
+
+    public String getVendor() {
+        return vendor;
+    }
+
+    public void setVendor(String vendor) {
+        this.vendor = vendor;
+    }
+
+    public String getGraphql_api_id() {
+        return graphql_api_id;
+    }
+
+    public void setGraphql_api_id(String graphql_api_id) {
+        this.graphql_api_id = graphql_api_id;
     }
 }
