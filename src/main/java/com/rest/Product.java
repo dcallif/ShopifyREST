@@ -1,5 +1,6 @@
 package com.rest;
 
+import com.shopifyObjects.SProduct;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -85,16 +86,14 @@ public class Product {
                 System.out.println("No products found in store.");
                 return;
             }
+            List<SProduct> products = new ArrayList<>();
             for (Object o : productsArr) {
                 JSONObject productObj = (JSONObject) o;
-                System.out.println(String.format("ID: %s, Handle: %s, Title: %s, Tags: %s", productObj.get("id"), productObj.get("handle"),
-                        productObj.get("title"), "{" + productObj.get("tags") + "}"));
-                JSONArray variants = (JSONArray) productObj.get("variants");
-                for (Object variant : variants) {
-                    JSONObject variantObj = (JSONObject) variant;
-                    System.out.println(String.format("SKU: %s, Price: %s, Inventory: %s", variantObj.get("sku"), variantObj.get("price"),
-                            variantObj.get("inventory_quantity")));
-                }
+                SProduct shopifyProduct = new SProduct(productObj);
+                System.out.println(String.format("ID: %s, Handle: %s, Title: %s, Tags: %s, SKU: %s, Price: %s, Inventory: %s, Weight: %s",
+                        shopifyProduct.getId(), shopifyProduct.getHandle(), shopifyProduct.getTitle(), "{" + shopifyProduct.getTags() + "}",
+                        shopifyProduct.getSku(), shopifyProduct.getPrice(), shopifyProduct.getQuantity(), shopifyProduct.getWeight()));
+                products.add(shopifyProduct);
             }
         } catch (java.io.IOException e) {
             e.printStackTrace();
